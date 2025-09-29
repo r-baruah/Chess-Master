@@ -244,6 +244,7 @@ This document captures the technical blueprint behind the ChessMaster Community 
 - If Supabase REST fails → bot catches and logs, retry logic in bulk operations.
 - If Redis unavailable → fallback storage ensures the bot remains operational.
 - Multi-bot failover: switch environment variable `BOT_TOKENS` order or rotate tokens via `/manage_tokens` command.
+- Render deployment: if container fails health check, inspect `render.yaml`, confirm environment variables, and review Render event logs for stack traces.
 
 ---
 

@@ -179,6 +179,15 @@ docker build -t chessmaster-bot .
 docker run -d --env-file .env chessmaster-bot
 ```
 
+### Render Deployment (Docker)
+- Ensure `.dockerignore` excludes local secrets and heavy assets before pushing.
+- Push the repository to GitHub (history already rewritten to a single clean commit).
+- In Render, select **New +** → **Blueprint** and point to `render.yaml` in this repo.
+- Verify the service type is `web`, plan is `Starter` (or above), and environment is `Docker`.
+- Update environment variables in Render → **Environment** tab using `.env-example` as a checklist; never upload `.env`.
+- If you do not provision a Redis instance, keep `REDIS_HOST` blank to allow the in-memory fallback; otherwise supply your managed Redis URL.
+- Deploy; Render runs the container with `python bot.py` and uses the `/` health check served by the aiohttp web server.
+
 ## 🧑‍💻 User & Contributor Commands
 
 ### Core Commands

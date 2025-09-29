@@ -1,27 +1,73 @@
 services:
   - type: web
     name: chess-courses-bot
-    env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: python bot.py
-    plan: free
+    env: docker
+    plan: starter
     autoDeploy: false
+    dockerCommand: python bot.py
+    healthCheckPath: /
     envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: PORT
+        value: "8080"
       - key: API_ID
         sync: false
       - key: API_HASH
         sync: false
       - key: BOT_TOKEN
         sync: false
+      - key: SESSION
+        sync: false
+      - key: ADMINS
+        sync: false
+      - key: AUTH_USERS
+        sync: false
+      - key: OWNER_USERNAME
+        sync: false
+      - key: SUPPORT_CHAT_ID
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: SUPABASE_DB_URL
+        sync: false
       - key: DATABASE_URI
         sync: false
       - key: DATABASE_NAME
         value: chess_courses_bot
-      - key: ADMINS
-        sync: false
       - key: LOG_CHANNEL
         sync: false
       - key: COURSE_CHANNEL
         sync: false
       - key: PUBLIC_CHANNEL
-        sync: false 
+        sync: false
+      - key: Announcement_channel
+        sync: false
+      - key: Database_Channel
+        sync: false
+      - key: MIGRATION_MODE
+        value: "false"
+      - key: USE_LEGACY_DB
+        value: "false"
+      - key: AUTO_DELETE_ENABLED
+        value: "true"
+      - key: TOKEN_VERIFICATION_ENABLED
+        value: "false"
+      - key: PREMIUM_ENABLED
+        value: "false"
+      - key: REFER_SYSTEM_ENABLED
+        value: "false"
+      - key: SHORTENER_ENABLED
+        value: "false"
+      - key: REDIS_HOST
+        value: redis
+      - key: REDIS_PORT
+        value: "6379"
+      - key: REDIS_DB
+        value: "0"
+    disk:
+      name: redis-cache
+      mountPath: /data
+      sizeGB: 1

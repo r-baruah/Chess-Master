@@ -1,0 +1,26 @@
+# Exclude files not needed in the Docker build context
+.git
+.gitignore
+.env
+.env.*
+__pycache__/
+*.py[cod]
+*.log
+.pytest_cache/
+.vscode/
+.cursor/
+.qoder/
+.qwen/
+.gemini/
+.bmad-core/
+node_modules/
+build/
+dist/
+dev-tools/
+docs/
+tests/
+*.sqlite3
+*.session*
+downloads/
+temp/
+
