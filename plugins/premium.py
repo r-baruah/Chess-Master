@@ -113,7 +113,7 @@ async def set_premium_command(client, message):
             if user_arg.startswith("@"):
                 user_arg = user_arg[1:]
             # Try to get user from database by username
-            users = await db.get_all_users()
+            users = await supabase_client.execute_query("SELECT * FROM users")
             user_found = False
             async for user in users:
                 if user.get("username") == user_arg:
@@ -137,7 +137,11 @@ async def set_premium_command(client, message):
         expiry_date = datetime.now() + timedelta(days=days)
         
         # Set premium status
-        success = await db.set_premium_status(user_id, True, expiry_date)
+        result = await supabase_client.execute_command(
+            "UPDATE users SET role = 'premium', premium_expiry = $1 WHERE telegram_id = $2 RETURNING id",
+            expiry_date, user_id
+        )
+        success = bool(result)
         
         if success:
             # Add to cache
@@ -177,7 +181,7 @@ async def remove_premium_command(client, message):
             if user_arg.startswith("@"):
                 user_arg = user_arg[1:]
             # Try to get user from database by username
-            users = await db.get_all_users()
+            users = await supabase_client.execute_query("SELECT * FROM users")
             user_found = False
             async for user in users:
                 if user.get("username") == user_arg:
@@ -188,7 +192,11 @@ async def remove_premium_command(client, message):
                 return await message.reply_text(f"User with username @{user_arg} not found in database.")
         
         # Remove premium status
-        success = await db.set_premium_status(user_id, False)
+        result = await supabase_client.execute_command(
+            "UPDATE users SET role = 'user', premium_expiry = NULL WHERE telegram_id = $1 RETURNING id",
+            user_id
+        )
+        success = bool(result)
         
         if success:
             # Remove from cache
@@ -207,7 +215,9 @@ async def remove_premium_command(client, message):
 async def list_premium_users_command(client, message):
     """Command for admins to list all premium users."""
     try:
-        premium_users = await db.get_premium_users()
+        premium_users = await supabase_client.execute_query(
+            "SELECT telegram_id FROM users WHERE role = 'premium'"
+        )
         
         if not premium_users:
             return await message.reply_text("No premium users found.")
@@ -259,7 +269,7 @@ async def check_premium_command(client, message):
             if user_arg.startswith("@"):
                 user_arg = user_arg[1:]
             # Try to get user from database by username
-            users = await db.get_all_users()
+            users = await supabase_client.execute_query("SELECT * FROM users")
             user_found = False
             async for user in users:
                 if user.get("username") == user_arg:
@@ -270,7 +280,10 @@ async def check_premium_command(client, message):
                 return await message.reply_text(f"User with username @{user_arg} not found in database.")
         
         # Get user details
-        user = await db.get_user(user_id)
+        user_result = await supabase_client.execute_query(
+            "SELECT role, premium_expiry FROM users WHERE telegram_id = $1", user_id
+        )
+        user = user_result[0] if user_result else None
         
         if not user:
             return await message.reply_text(f"User with ID {user_id} not found in database.")
@@ -317,7 +330,11 @@ async def check_expired_premiums():
     """Task to periodically check for expired premium subscriptions."""
     while True:
         try:
-            count = await db.process_expired_premiums()
+            # Use Supabase client instead of undefined 'db'
+            result = await supabase_client.execute_command(
+                "UPDATE users SET role = 'user' WHERE role = 'premium' AND premium_expiry < NOW() RETURNING id"
+            )
+            count = len(result) if result else 0
             if count > 0:
                 logger.info(f"Processed {count} expired premium subscriptions")
         except Exception as e:
@@ -326,5 +343,6 @@ async def check_expired_premiums():
         # Run every hour
         await asyncio.sleep(3600)
 
-# Start the task when the plugin is loaded
-asyncio.create_task(check_expired_premiums()) 
+# Start the task when the plugin is loaded only if premium is enabled
+if PREMIUM_ENABLED:
+    asyncio.create_task(check_expired_premiums()) 

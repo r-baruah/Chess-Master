@@ -11,7 +11,7 @@ from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply, Message, CallbackQuery
 from pyrogram.errors import ChatAdminRequired, FloodWait, UserIsBlocked, InputUserDeactivated, MessageNotModified
 
-from info import ADMINS, LOG_CHANNEL, SUPPORT_CHAT_ID, CUSTOM_FILE_CAPTION, OWNER_USERNAME, DEVELOPER_LINK, OWNER_LINK, PUBLIC_CHANNEL, TOKEN_VERIFICATION_ENABLED, PREMIUM_ENABLED
+from info import ADMINS, LOG_CHANNEL, SUPPORT_CHAT_ID, CUSTOM_FILE_CAPTION, OWNER_USERNAME, DEVELOPER_LINK, OWNER_LINK, PUBLIC_CHANNEL, TOKEN_VERIFICATION_ENABLED, PREMIUM_ENABLED, PICS
 from core.supabase_client import supabase_client
 from utils import temp, get_size, extract_user_id, extract_course_id, send_all_files, check_premium_user, check_token_required, get_shortlink
 from Script import script

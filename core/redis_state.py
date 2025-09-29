@@ -54,6 +54,11 @@ class RedisStateManager:
         """Set user session data with TTL"""
         try:
             key = f"user_session:{telegram_id}"
+            if self.use_fallback:
+                self.fallback_storage[key] = session_data
+                logger.debug(f"User session set for {telegram_id} (fallback)")
+                return
+                
             await self.redis_client.setex(
                 key, 
                 ttl, 
@@ -66,6 +71,10 @@ class RedisStateManager:
     async def get_user_session(self, telegram_id: int) -> Optional[Dict]:
         """Get user session data"""
         try:
+            if self.use_fallback:
+                key = f"user_session:{telegram_id}"
+                return self.fallback_storage.get(key)
+            
             key = f"user_session:{telegram_id}"
             data = await self.redis_client.get(key)
             return json.loads(data) if data else None
@@ -77,6 +86,11 @@ class RedisStateManager:
         """Delete user session"""
         try:
             key = f"user_session:{telegram_id}"
+            if self.use_fallback:
+                self.fallback_storage.pop(key, None)
+                logger.debug(f"User session deleted for {telegram_id} (fallback)")
+                return
+                
             await self.redis_client.delete(key)
             logger.debug(f"User session deleted for {telegram_id}")
         except Exception as e:
@@ -102,11 +116,18 @@ class RedisStateManager:
         """Get bot state value"""
         try:
             full_key = f"bot_state:{key}"
+            if self.use_fallback:
+                return self.fallback_storage.get(full_key, default)
+                
             data = await self.redis_client.get(full_key)
             return json.loads(data) if data else default
         except Exception as e:
             logger.error(f"Failed to get bot state: {e}")
             return default
+    
+    async def get(self, key: str, default: Any = None) -> Any:
+        """Generic get method for compatibility"""
+        return await self.get_bot_state(key, default)
     
     async def delete_bot_state(self, key: str):
         """Delete bot state value"""
