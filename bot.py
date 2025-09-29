@@ -129,15 +129,27 @@ class Bot(Client):
         
         try:
             if LOG_CHANNEL and LOG_CHANNEL != 0:
-                await self.send_message(chat_id=LOG_CHANNEL, text=start_msg)
-                logging.info(f"Startup message sent to LOG_CHANNEL: {LOG_CHANNEL}")
+                try:
+                    # First try to get channel info to verify access
+                    try:
+                        chat_info = await self.get_chat(LOG_CHANNEL)
+                        logging.info(f"LOG_CHANNEL accessible: {chat_info.title if hasattr(chat_info, 'title') else 'Channel'}")
+                    except Exception as info_error:
+                        logging.warning(f"Cannot access LOG_CHANNEL {LOG_CHANNEL}: {info_error}")
+                        # Channel might exist but bot lacks permissions
+                    
+                    # Try to send message
+                    await self.send_message(chat_id=LOG_CHANNEL, text=start_msg)
+                    logging.info(f"Startup message sent to LOG_CHANNEL: {LOG_CHANNEL}")
+                except Exception as send_error:
+                    logging.warning(f"Failed to send to LOG_CHANNEL {LOG_CHANNEL}: {send_error}")
+                    logging.info("Startup message skipped - check if bot is admin in the channel")
             else:
                 logging.info("No valid LOG_CHANNEL configured, skipping startup message")
         except Exception as e:
             # Log the error but continue bot operation
-            logging.error(f"Failed to send startup message to LOG_CHANNEL ({LOG_CHANNEL}): {e}. The bot will continue to run.")
-            # Optionally, print a less alarming message to console as well
-            print(f"[Startup Log Error] Could not send message to LOG_CHANNEL {LOG_CHANNEL}. Check Render logs for details. Bot is continuing.")
+            logging.error(f"Failed to send startup message: {e}. The bot will continue to run.")
+            print(f"[Startup Log Info] Startup message skipped due to channel issues. Bot is continuing normally.")
         
         print("Loading plugins...")
         for name in files:

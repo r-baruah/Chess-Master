@@ -101,6 +101,11 @@ class RedisStateManager:
         """Set bot state value"""
         try:
             full_key = f"bot_state:{key}"
+            if self.use_fallback:
+                self.fallback_storage[full_key] = value
+                logger.debug(f"Bot state set: {key} (fallback)")
+                return
+                
             serialized_value = json.dumps(value, default=str)
             
             if ttl:
@@ -129,10 +134,23 @@ class RedisStateManager:
         """Generic get method for compatibility"""
         return await self.get_bot_state(key, default)
     
+    async def set(self, key: str, value: Any, ttl: Optional[int] = None) -> None:
+        """Generic set method for compatibility"""
+        await self.set_bot_state(key, value, ttl)
+    
+    async def delete(self, key: str) -> None:
+        """Generic delete method for compatibility"""
+        await self.delete_bot_state(key)
+    
     async def delete_bot_state(self, key: str):
         """Delete bot state value"""
         try:
             full_key = f"bot_state:{key}"
+            if self.use_fallback:
+                self.fallback_storage.pop(full_key, None)
+                logger.debug(f"Bot state deleted: {key} (fallback)")
+                return
+                
             await self.redis_client.delete(full_key)
         except Exception as e:
             logger.error(f"Failed to delete bot state: {e}")
