@@ -128,8 +128,11 @@ class Bot(Client):
         start_msg = f"<b>Chess Courses Bot Started!\n\nTime: {time_str}</b>"
         
         try:
-            await self.send_message(chat_id=LOG_CHANNEL, text=start_msg)
-            logging.info(f"Startup message sent to LOG_CHANNEL: {LOG_CHANNEL}")
+            if LOG_CHANNEL and LOG_CHANNEL != 0:
+                await self.send_message(chat_id=LOG_CHANNEL, text=start_msg)
+                logging.info(f"Startup message sent to LOG_CHANNEL: {LOG_CHANNEL}")
+            else:
+                logging.info("No valid LOG_CHANNEL configured, skipping startup message")
         except Exception as e:
             # Log the error but continue bot operation
             logging.error(f"Failed to send startup message to LOG_CHANNEL ({LOG_CHANNEL}): {e}. The bot will continue to run.")
