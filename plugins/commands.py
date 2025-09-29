@@ -32,12 +32,27 @@ async def start(client, message):
             InlineKeyboardButton('💬 Support', url=f'https://t.me/{SUPPORT_CHAT_ID}'),
             InlineKeyboardButton('ℹ️ Help', callback_data='help_group') # Differentiate help for groups if needed
         ]]
-        await message.reply_photo(
-            photo=random.choice(PICS), # Use a random picture here too for consistency
-            caption=script.START_TXT.format(message.from_user.mention if message.from_user else "Hey there"), # Use the main start text
-            reply_markup=InlineKeyboardMarkup(buttons),
-            disable_web_page_preview=True
-        )
+        # Try to send with photo, fallback to text if photo fails
+        try:
+            if PICS and PICS[0] != 'https://example.com/chess_banner.jpg':
+                await message.reply_photo(
+                    photo=random.choice(PICS),
+                    caption=script.START_TXT.format(message.from_user.mention if message.from_user else "Hey there"),
+                    reply_markup=InlineKeyboardMarkup(buttons)
+                )
+            else:
+                await message.reply_text(
+                    text=script.START_TXT.format(message.from_user.mention if message.from_user else "Hey there"),
+                    reply_markup=InlineKeyboardMarkup(buttons),
+                    disable_web_page_preview=True
+                )
+        except Exception as e:
+            logger.error(f"Failed to send group start photo, falling back to text: {e}")
+            await message.reply_text(
+                text=script.START_TXT.format(message.from_user.mention if message.from_user else "Hey there"),
+                reply_markup=InlineKeyboardMarkup(buttons),
+                disable_web_page_preview=True
+            )
         return
 
     # Add user to database if not exists using Supabase
@@ -54,7 +69,8 @@ async def start(client, message):
             tz = pytz.timezone('Asia/Kolkata')
             now = datetime.datetime.now(tz)
             time_str = now.strftime("%Y-%m-%d %H:%M:%S %Z")
-            await client.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(message.from_user.id, message.from_user.mention, time_str))
+            if LOG_CHANNEL and LOG_CHANNEL != 0:
+                await client.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(message.from_user.id, message.from_user.mention, time_str))
     except Exception as e:
         logger.error(f"Error adding user to database: {e}")
 
@@ -180,11 +196,29 @@ async def start(client, message):
     
     # Choose a random banner image from PICS
     reply_markup = InlineKeyboardMarkup(buttons)
-    await message.reply_photo(
-        photo=random.choice(PICS),
-        caption=script.START_TXT.format(message.from_user.mention),
-        reply_markup=reply_markup
-    )
+    
+    # Try to send with photo, fallback to text if photo fails
+    try:
+        if PICS and PICS[0] != 'https://example.com/chess_banner.jpg':
+            await message.reply_photo(
+                photo=random.choice(PICS),
+                caption=script.START_TXT.format(message.from_user.mention),
+                reply_markup=reply_markup
+            )
+        else:
+            # No valid photos configured, send text message
+            await message.reply_text(
+                text=script.START_TXT.format(message.from_user.mention),
+                reply_markup=reply_markup,
+                disable_web_page_preview=True
+            )
+    except Exception as e:
+        logger.error(f"Failed to send photo, falling back to text: {e}")
+        await message.reply_text(
+            text=script.START_TXT.format(message.from_user.mention),
+            reply_markup=reply_markup,
+            disable_web_page_preview=True
+        )
 
 @Client.on_message(filters.command("help"))
 async def help(client, message):
