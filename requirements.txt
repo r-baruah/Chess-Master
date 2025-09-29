@@ -1,0 +1,34 @@
+pyrogram==2.0.106
+# tgcrypto==1.2.5  # Removed - requires MSVC build tools on Windows
+pymongo==4.5.0
+motor==3.2.0
+marshmallow==3.20.1
+python-dotenv==1.0.0
+aiofiles==23.1.0
+dnspython==2.4.2
+pytz==2023.3
+requests==2.31.0
+urllib3==2.0.4
+certifi==2023.7.22
+aiodns==3.0.0
+aiohttp==3.10.11
+async-timeout==4.0.3
+# New dependencies for Story 1.1
+supabase==1.0.4
+asyncpg==0.30.0
+redis==5.0.1
+cryptography==42.0.4
+APScheduler==3.10.4
+# Testing dependencies
+pytest==7.4.3
+pytest-asyncio==0.21.1
+# Story 1.6 Disaster Recovery dependencies
+psutil==5.9.6
+dataclasses==0.6; python_version < '3.7'
+# Story 1.9 API and Integration dependencies
+fastapi==0.104.1
+uvicorn==0.24.0
+pydantic==2.10.4
+PyJWT==2.8.0
+httpx>=0.24,<0.25
+python-multipart==0.0.6
