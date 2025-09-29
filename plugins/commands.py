@@ -71,16 +71,11 @@ async def start(client, message):
             time_str = now.strftime("%Y-%m-%d %H:%M:%S %Z")
             if LOG_CHANNEL and LOG_CHANNEL != 0:
                 try:
+                    # LOG_CHANNEL already contains the correct format (e.g., -1003163635353)
                     await client.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(message.from_user.id, message.from_user.mention, time_str))
                 except Exception as log_error:
                     logger.warning(f"Failed to send to LOG_CHANNEL {LOG_CHANNEL}: {log_error}")
-                    # Try alternative format for public channels
-                    if str(LOG_CHANNEL).startswith('-100'):
-                        alt_id = int(str(LOG_CHANNEL)[4:])  # Remove -100 prefix
-                        try:
-                            await client.send_message(f"-{alt_id}", script.LOG_TEXT_P.format(message.from_user.id, message.from_user.mention, time_str))
-                        except Exception:
-                            pass  # Silently fail if alternative format doesn't work
+                    # Don't retry with different formats since the ID should be correct
     except Exception as e:
         logger.error(f"Error adding user to database: {e}")
 

@@ -130,20 +130,18 @@ class Bot(Client):
         try:
             if LOG_CHANNEL and LOG_CHANNEL != 0:
                 try:
-                    # First try to get channel info to verify access
-                    try:
-                        chat_info = await self.get_chat(LOG_CHANNEL)
-                        logging.info(f"LOG_CHANNEL accessible: {chat_info.title if hasattr(chat_info, 'title') else 'Channel'}")
-                    except Exception as info_error:
-                        logging.warning(f"Cannot access LOG_CHANNEL {LOG_CHANNEL}: {info_error}")
-                        # Channel might exist but bot lacks permissions
-                    
-                    # Try to send message
+                    # LOG_CHANNEL already contains the correct format (e.g., -1003163635353)
                     await self.send_message(chat_id=LOG_CHANNEL, text=start_msg)
                     logging.info(f"Startup message sent to LOG_CHANNEL: {LOG_CHANNEL}")
                 except Exception as send_error:
                     logging.warning(f"Failed to send to LOG_CHANNEL {LOG_CHANNEL}: {send_error}")
-                    logging.info("Startup message skipped - check if bot is admin in the channel")
+                    # Try to get more info about the channel access
+                    try:
+                        chat_info = await self.get_chat(LOG_CHANNEL)
+                        logging.info(f"Channel exists but send failed: {chat_info.title if hasattr(chat_info, 'title') else 'Unknown'}")
+                    except Exception as info_error:
+                        logging.warning(f"Cannot access LOG_CHANNEL {LOG_CHANNEL}: {info_error}")
+                        logging.info("Check: 1) Bot is added to channel, 2) Bot has admin rights, 3) Channel ID is correct")
             else:
                 logging.info("No valid LOG_CHANNEL configured, skipping startup message")
         except Exception as e:
