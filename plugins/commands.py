@@ -220,6 +220,93 @@ async def start(client, message):
             disable_web_page_preview=True
         )
 
+@Client.on_message(filters.command("manage_roles") & filters.private)
+async def manage_roles_command(client, message):
+    """Role management command for all users"""
+    try:
+        # Check if user has role management permissions
+        from core.roles import rbac_manager
+        from core.anonymity import anonymous_manager
+        
+        telegram_id = message.from_user.id
+        
+        # Check permission through role system
+        user = await anonymous_manager.get_user_by_telegram_id(telegram_id)
+        if not user:
+            return await message.reply_text("❌ You are not registered. Use /start first.")
+            
+        has_permission = await rbac_manager.check_permission(telegram_id, 'manage_roles')
+        
+        if not has_permission:
+            # Show available role info instead
+            user_role = user.get('role', 'user')
+            await message.reply_text(
+                f"🔐 **Your Current Role:** `{user_role.title()}`\n\n"
+                "ℹ️ You don't have role management permissions.\n"
+                "Contact an admin if you need role changes.\n\n"
+                "**Available commands:**\n"
+                "• `/addcourse` - Upload courses\n"
+                "• `/bulkupload` - Bulk upload courses\n"
+                "• `/mystatus` - Check your submissions\n"
+                "• `/search` - Search courses"
+            )
+            return
+        
+        # User has permissions, show role panel
+        await message.reply_text(
+            "🛡️ **Role Management Access Granted**\n\n"
+            "Use `/role_panel` to access the full role management interface.\n\n"
+            "**Quick Commands:**\n"
+            "• `/role_panel` - Full management panel\n"
+            "• `/list_users` - View all users\n"
+            "• `/role_stats` - Role statistics"
+        )
+        
+    except Exception as e:
+        logger.error(f"Role management command error: {e}")
+        await message.reply_text("❌ Error accessing role management. Please try again.")
+
+# File upload handler for course creation
+@Client.on_message(filters.private & (filters.document | filters.video | filters.photo))
+async def handle_file_upload(client, message):
+    """Handle file uploads for course creation"""
+    try:
+        user_id = message.from_user.id
+        
+        # Get user info
+        from core.anonymity import anonymous_manager
+        user = await anonymous_manager.get_user_by_telegram_id(user_id)
+        if not user:
+            return await message.reply_text(
+                "❌ You are not registered. Use /start first to register."
+            )
+        
+        # Guide user to proper course creation
+        buttons = InlineKeyboardMarkup([
+            [InlineKeyboardButton("📚 Start Course Upload", callback_data="start_course_upload")],
+            [InlineKeyboardButton("📦 Bulk Upload", callback_data="start_bulk_upload")],
+            [InlineKeyboardButton("❌ Cancel", callback_data="cancel_upload")]
+        ])
+        
+        file_type = "📄 Document"
+        if message.video:
+            file_type = "🎥 Video"
+        elif message.photo:
+            file_type = "🖼️ Photo"
+            
+        await message.reply_text(
+            f"📁 **File Received: {file_type}**\n\n"
+            "To upload this as part of a course, please use the course creation workflow:\n\n"
+            "• **Single Course** - Upload one course with metadata\n"
+            "• **Bulk Upload** - Upload multiple courses at once\n\n"
+            "Choose an option below to proceed:",
+            reply_markup=buttons
+        )
+        
+    except Exception as e:
+        logger.error(f"File upload handler error: {e}")
+        await message.reply_text("❌ Error handling file upload. Please try again.")
+
 @Client.on_message(filters.command("help"))
 async def help(client, message):
     buttons = [[

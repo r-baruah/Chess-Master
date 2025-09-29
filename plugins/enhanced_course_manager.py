@@ -74,7 +74,7 @@ def initialize_enhanced_components(bot_client):
 
 # Enhanced Course Upload Commands
 
-@Client.on_message(filters.command(["bulkupload", "bulk_upload"]) & filters.private & filters.user(ADMINS))
+@Client.on_message(filters.command(["bulkupload", "bulk_upload"]) & filters.private)
 async def start_bulk_course_upload(client, message):
     """Start bulk course upload workflow"""
     try:
@@ -200,7 +200,7 @@ async def check_batch_status(client, message):
         logger.error(f"Failed to check batch status: {e}")
         await message.reply_text("❌ Failed to check batch status. Please try again.")
 
-@Client.on_message(filters.command(["addcourse", "newcourse"]) & filters.private & filters.user(ADMINS))
+@Client.on_message(filters.command(["addcourse", "newcourse"]) & filters.private)
 async def start_enhanced_course_upload(client, message):
     """Start the enhanced course upload workflow with progress tracking"""
     try:
@@ -246,7 +246,7 @@ async def start_enhanced_course_upload(client, message):
         logger.error(f"Enhanced upload start error: {e}")
         await message.reply_text(f"❌ Error starting upload: {str(e)}")
 
-@Client.on_message(filters.command(["resume", "resume_upload"]) & filters.private & filters.user(ADMINS))
+@Client.on_message(filters.command(["resume", "resume_upload"]) & filters.private)
 async def resume_course_upload(client, message):
     """Resume an interrupted course upload session"""
     try:
@@ -287,7 +287,7 @@ async def resume_course_upload(client, message):
         logger.error(f"Resume upload error: {e}")
         await message.reply_text(f"❌ Error resuming upload: {str(e)}")
 
-@Client.on_message(filters.command(["cancel_upload", "abort"]) & filters.private & filters.user(ADMINS))
+@Client.on_message(filters.command(["cancel_upload", "abort"]) & filters.private)
 async def cancel_course_upload(client, message):
     """Cancel active course upload session"""
     try:
@@ -548,7 +548,7 @@ async def create_step_buttons(session, step_instructions: Dict) -> List[List[Inl
 
 # Course Status and Dashboard Commands
 
-@Client.on_message(filters.command(["mystatus", "course_status"]) & filters.private & filters.user(ADMINS))
+@Client.on_message(filters.command(["mystatus", "course_status"]) & filters.private)
 async def show_course_status_dashboard(client, message):
     """Show contributor's course status dashboard"""
     try:
